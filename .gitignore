@@ -1,0 +1,30 @@
+# a comment - this is ignored
+# no .a files
+# *.a
+# but do track lib.a, even though you're ignoring .a files above
+# !lib.a
+# only ignore the root TODO file, not subdir/TODO
+# /TODO
+# ignore all files in the build/ directory
+# build/
+# ignore doc/notes.txt, but not doc/server/arch.txt
+# doc/*.txt
+# ignore all .txt files in the doc/ directory
+# doc/**/*.txt
+
+
+# test data
+getdata_projectfiles_UCI HAR Dataset.zip
+/test
+/train
+
+# Rstudio workspace files
+.RData
+.Rhistory
+.Rproj.user/**
+*/.Rproj.user/*
+*/.Rproj.user/**
+*/.RData
+*/.Rhistory
+
+
