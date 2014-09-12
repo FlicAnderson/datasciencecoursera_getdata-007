@@ -14,68 +14,49 @@
 # ... From descriptively named dataset, create second, independent tidy data 
 # ... set w/ average of each variable for each activity and each subject.
  
+# ----------------------------------SETUP------------------------------------- #
+
+# empty environment
+rm(list=ls())
+
 # set working directory
-setwd("Z://CMEP/Rstats/Coursera_GettingAndCleaningData/CourseProject/")
+#setwd("Z://CMEP/Rstats/Coursera_GettingAndCleaningData/CourseProject/")
 
 # install/load necessary packages: 
-#if (!require()){         # if package not loaded
-#  install.packages("")   # install package if required
-#  library()              # load package
-#} 
+if (!require(tidyr)){         # if package not loaded
+  install.packages("tidyr")   # install package if required
+  library(tidyr)              # load package
+} 
 
-# ------ LIST FILES --------#
+# =================================STEP-1===================================== #
 
-# list all files in the directory
-list.files()
-  # list files in the train directory
-  list.files("./train/")
-  # list files in the test directory
-  list.files("./test/")
-
-#--------- READ IN-------------#
-
-## ACTIVITY LABELS
+## READ IN ACTIVITY LABELS
   # read in activity labels & show dimensions
 activities <- read.table("./activity_labels.txt"); dim(labels)
   # v1 - label number (1-6)
   # v2 - activity label string ("WALKING" : "LAYING")
 
-## FEATURES VARIABLES
+## READ IN FEATURES VARIABLES
   # read in features variables & show dimensions
 features <- read.table("./features.txt"); dim(features)
   # V1 - feature number (1-561)
   # V2 - feature name ("tBodyAcc-mean()-X" : "angle(Z,gravityMean)")
 
-## TRAINING SET 
+## READ IN TRAINING SET 
   # read in training set data to variable named train; then show dimensions
-train <- read.table("./train/x_train.txt", col.names=features[,2]); dim(train)
-  # 7352 rows, 561 columns
-
+train <- read.table("./train/X_train.txt", col.names=features[,2]); dim(train)
   # read in subject info for training set
 train_subject <- read.table("./train/subject_train.txt", col.names="subject"); dim(train_subject)
-  # 7352 rows, 1 column
-
   # read in training data set labels & show dimensions
 train_labels <- read.table("./train/y_train.txt", col.names="activity"); dim(train_labels)
-  # 7352 rows, 1 column
 
-
-
-## TEST SET 
+## READ IN TEST SET 
   # read in test set data to variable named test; then show dimensions
-test <- read.table("./test/x_test.txt", col.names=features[,2]); dim(test)
-  # 2947 rows, 561 columns
-
+test <- read.table("./test/X_test.txt", col.names=features[,2]); dim(test)
   # read in subject info for test set
 test_subject <- read.table("./test/subject_test.txt", col.names="subject"); dim(test_subject)
-
-  # 2947 rows, 1 column
-  
   # read in test data set labels & show dimensions
 test_labels <- read.table("./test/y_test.txt", col.names="activity"); dim(test_labels)
-  # 2947 rows, 1 column
-
-#--------- ATTACH ACTIVITY LABEL VALUES  -------------#
 
 ## ATTACH ACTIVITY LABEL VALUES TO DATA
   # add activity values as a column onto training set data
@@ -83,80 +64,78 @@ train <- cbind(train, train_subject, train_labels); dim(train)
   # add activity values as a column onto test set data
 test <- cbind(test, test_subject, test_labels); dim(test)
 
-
-#--------- MERGE -------------#
-
-# collate train and test sets into one dataset using rbind: 
+## MERGE TEST AND TRAINING SETS
+  # collate train and test sets into one dataset using rbind: 
 datA <- rbind(train, test); dim(datA)
 
-#--------- EXTRACT THE MEASUREMENTS -------------#
+# =================================STEP-2===================================== #
 
-  # features with "mean" to find mean measurements (but not meanFreq())
-#grep("mean\\(", features[,2])
-  # features with "std" to find standard deviation measurements
-#grep("std", features[,2])
+## EXTRACT THE MEASUREMENTS
+  # sort the mean and standard deviation feature variable indices 
+mean_std <- sort( # sort variables by index
+        c(                                # concatonate grep results
+        grep("mean\\(", features[,2]),  # mean variables (not inc. meanFreq())
+        grep("std", features[,2])       # standard deviation variables
+        )
+)
 
-  # collate the mean and std measurement variables 
-#c(grep("mean\\(", features[,2]), grep("std", features[,2]))
-  
-# sort the mean and standard deviation feature variable indices 
-mean_std <- sort(c(grep("mean\\(", features[,2]), grep("std", features[,2])))
+  # use those indices to subset the data
+datA <- datA[,   # overwrite datA object with the following extract:
+        c(                   
+        mean_std,           # means & standard deviations (via column indices)
+        ncol(datA)-1,       # subject number (penultimate column)
+        ncol(datA)          # activity values (last column)
+        )
+]
 
-# extract only means & standard deviations (column indices stored in mean_std)
-# and also subject number - from ncol(datA)-1 ; the penultimate column
-# and activity values - from ncol(datA) ; the last column
-datA <- datA[, c(mean_std, ncol(datA)-1, ncol(datA))]
-
-# show new dimensions of extracted measurements data
+  # show new dimensions of extracted measurements data
 dim(datA)
 
-#--------- NAME THE ACTIVITIES -------------#
+# =================================STEP-3===================================== #
 
-# this shows there's the 1:30 thing, all OK there
-table(datA$subject) 
-##### maybe rename this as "subjectID"
-
-# make activity a factor in the dataset
+## NAME THE ACTIVITIES
+  # make activity a factor in the dataset
 datA$activity <- as.factor(datA$activity)
-# set the levels of the new factor as the names of the activities
+  # set the levels of the new factor as the names of the activities
 levels(datA$activity) <- activities[,2]
 
-#--------- NAME THE VARIABLES -------------#
+# =================================STEP-4===================================== #
 
-# create a vector of names from current names & clean them up for readability
-# fix feature measurement names using regular expressions:
+## NAME THE VARIABLES
+  # create a vector of names from current names & clean them up for readability
+  # fix feature measurement names using regular expressions:
 a <- names(datA)              # create vector 'a' of current names
-a <- gsub("[\\.]+", "_", a)   # remove all the dots and replace with an underscore
+a <- gsub("[\\.]+", "_", a)   # remove all the dots and replace w/ an underscore
 a <- gsub("_$", "", a)        # remove dashes at end of string (eg. "mean-")
-# NB: these did not affect 'subject' or 'activity'
+  # NB: these did not affect 'subject' or 'activity'
 
-# change placeholder names of subject and activity to more descriptive names:
+  # change placeholder names of subject and activity to more descriptive names:
 a <- gsub("subject", "subject_ID", a)
 a <- gsub("activity", "activity_type", a)
 
-# change data names to the easier-to-read ones
+  # change data names to the easier-to-read ones
 names(datA) <- a
 
-#--------- CREATE INDEPENDENT TIDY DATASET -------------#
+# =================================STEP-5===================================== #
 
-# create independent dataset from tidy data:
-#SamsungGSII_sensorData <- datA 
+## CREATE INDEPENDENT TIDY DATASET
+  # create independent dataset from tidy data:
+SamsungGSII_sensorData <- datA %>% 
+          # gather measurement variables into 'measurement' column 
+          # & their values into 'value'
+        gather(measurement, value, tBodyAcc_mean_X:fBodyBodyGyroJerkMag_std) %>%
+          # group data by subject, activity, and measurement
+        group_by(subject_ID, activity_type, measurement) %>%
+          # print summary of data, calculating mean of values
+        summarize(meanFeatureValue=mean(value))
 
-# average for each variable
-# average for each subject
+## WRITE OUT TIDY DATASET
+  # write data out as .txt file without row-names
+write.table(
+        SamsungGSII_sensorData, 
+        file="SamsungGSII_sensorData.txt", 
+        row.names=FALSE
+)
 
-# subject  # activity  # average for each feature variable
-library(dplyr)
-library(tidyr)
-#datB <- tbl_df(datA)
-
-# select all columns but activity type
-#datC <- select(datB, -activity_type)
-#datD <- group_by(datC, subject_ID)
-#summarize(datD, mean(subject_ID))
-
-SamsungGSII_sensorData <- datA
-SamsungGSII_sensorData %>% 
-  gather(measurement, value, tBodyAcc_mean_X:fBodyBodyGyroJerkMag_std) %>%
-  print
-
+  # tidy environment
+rm(list=ls())
