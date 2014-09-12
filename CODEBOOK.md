@@ -302,3 +302,6 @@ tBodyAccMean
 tBodyAccJerkMean
 tBodyGyroMean
 tBodyGyroJerkMean
+
+--------------------------------------------------------------------------------
+<sup>(Flic Anderson, 12th September 2014)</sup> 
