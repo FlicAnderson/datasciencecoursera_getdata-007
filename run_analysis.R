@@ -1,6 +1,6 @@
 ## Coursera :: GettingAndCleaningData :: CourseProject :: run_analysis.R
 ## ======================================================================== 
-## (4th September 2014)
+## (12th September 2014)
 ## Author: Flic Anderson
 ##
 
@@ -19,9 +19,6 @@
 # empty environment
 rm(list=ls())
 
-# set working directory
-#setwd("Z://CMEP/Rstats/Coursera_GettingAndCleaningData/CourseProject/")
-
 # install/load necessary packages: 
 if (!require(tidyr)){         # if package not loaded
   install.packages("tidyr")   # install package if required
@@ -31,42 +28,42 @@ if (!require(tidyr)){         # if package not loaded
 # =================================STEP-1===================================== #
 
 ## READ IN ACTIVITY LABELS
-  # read in activity labels & show dimensions
-activities <- read.table("./activity_labels.txt"); dim(labels)
+  # read in activity labels 
+activities <- read.table("./activity_labels.txt")
   # v1 - label number (1-6)
   # v2 - activity label string ("WALKING" : "LAYING")
 
 ## READ IN FEATURES VARIABLES
-  # read in features variables & show dimensions
-features <- read.table("./features.txt"); dim(features)
+  # read in features variables
+features <- read.table("./features.txt")
   # V1 - feature number (1-561)
   # V2 - feature name ("tBodyAcc-mean()-X" : "angle(Z,gravityMean)")
 
 ## READ IN TRAINING SET 
-  # read in training set data to variable named train; then show dimensions
-train <- read.table("./train/X_train.txt", col.names=features[,2]); dim(train)
+  # read in training set data to variable named train
+train <- read.table("./train/X_train.txt", col.names=features[,2])
   # read in subject info for training set
-train_subject <- read.table("./train/subject_train.txt", col.names="subject"); dim(train_subject)
-  # read in training data set labels & show dimensions
-train_labels <- read.table("./train/y_train.txt", col.names="activity"); dim(train_labels)
+train_subject <- read.table("./train/subject_train.txt", col.names="subject")
+  # read in training data set labels 
+train_labels <- read.table("./train/y_train.txt", col.names="activity")
 
 ## READ IN TEST SET 
-  # read in test set data to variable named test; then show dimensions
-test <- read.table("./test/X_test.txt", col.names=features[,2]); dim(test)
+  # read in test set data to variable named test
+test <- read.table("./test/X_test.txt", col.names=features[,2])
   # read in subject info for test set
-test_subject <- read.table("./test/subject_test.txt", col.names="subject"); dim(test_subject)
-  # read in test data set labels & show dimensions
-test_labels <- read.table("./test/y_test.txt", col.names="activity"); dim(test_labels)
+test_subject <- read.table("./test/subject_test.txt", col.names="subject")
+  # read in test data set labels 
+test_labels <- read.table("./test/y_test.txt", col.names="activity")
 
-## ATTACH ACTIVITY LABEL VALUES TO DATA
+## ATTACH ACTIVITY LABEL VALUES AND SUBJECT INFO TO DATA
   # add activity values as a column onto training set data
-train <- cbind(train, train_subject, train_labels); dim(train)
+train <- cbind(train, train_subject, train_labels)
   # add activity values as a column onto test set data
-test <- cbind(test, test_subject, test_labels); dim(test)
+test <- cbind(test, test_subject, test_labels)
 
 ## MERGE TEST AND TRAINING SETS
   # collate train and test sets into one dataset using rbind: 
-datA <- rbind(train, test); dim(datA)
+datA <- rbind(train, test)
 
 # =================================STEP-2===================================== #
 
@@ -88,9 +85,6 @@ datA <- datA[,   # overwrite datA object with the following extract:
         )
 ]
 
-  # show new dimensions of extracted measurements data
-dim(datA)
-
 # =================================STEP-3===================================== #
 
 ## NAME THE ACTIVITIES
@@ -106,7 +100,7 @@ levels(datA$activity) <- activities[,2]
   # fix feature measurement names using regular expressions:
 a <- names(datA)              # create vector 'a' of current names
 a <- gsub("[\\.]+", "_", a)   # remove all the dots and replace w/ an underscore
-a <- gsub("_$", "", a)        # remove dashes at end of string (eg. "mean-")
+a <- gsub("_$", "", a)        # remove underscores at end of string (eg. "mean_")
   # NB: these did not affect 'subject' or 'activity'
 
   # change placeholder names of subject and activity to more descriptive names:
@@ -136,6 +130,3 @@ write.table(
         file="SamsungGSII_sensorData.txt", 
         row.names=FALSE
 )
-
-  # tidy environment
-rm(list=ls())
