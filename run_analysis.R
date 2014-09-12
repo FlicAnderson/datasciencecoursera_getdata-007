@@ -20,6 +20,10 @@
 rm(list=ls())
 
 # install/load necessary packages: 
+if (!require(dplyr)){         # if package not loaded
+  install.packages("dplyr")   # install package if required
+  library(dplyr)              # load package
+}
 if (!require(tidyr)){         # if package not loaded
   install.packages("tidyr")   # install package if required
   library(tidyr)              # load package
