@@ -123,6 +123,40 @@ levels(datA$activity) <- activities[,2]
 
 #--------- NAME THE VARIABLES -------------#
 
-# nicely name columns 1:66 (not activity or subject)
-# descriptive names
+# create a vector of names from current names & clean them up for readability
+# fix feature measurement names using regular expressions:
+a <- names(datA)              # create vector 'a' of current names
+a <- gsub("[\\.]+", "_", a)   # remove all the dots and replace with an underscore
+a <- gsub("_$", "", a)        # remove dashes at end of string (eg. "mean-")
+# NB: these did not affect 'subject' or 'activity'
+
+# change placeholder names of subject and activity to more descriptive names:
+a <- gsub("subject", "subject_ID", a)
+a <- gsub("activity", "activity_type", a)
+
+# change data names to the easier-to-read ones
+names(datA) <- a
+
+#--------- CREATE INDEPENDENT TIDY DATASET -------------#
+
+# create independent dataset from tidy data:
+#SamsungGSII_sensorData <- datA 
+
+# average for each variable
+# average for each subject
+
+# subject  # activity  # average for each feature variable
+library(dplyr)
+library(tidyr)
+#datB <- tbl_df(datA)
+
+# select all columns but activity type
+#datC <- select(datB, -activity_type)
+#datD <- group_by(datC, subject_ID)
+#summarize(datD, mean(subject_ID))
+
+SamsungGSII_sensorData <- datA
+SamsungGSII_sensorData %>% 
+  gather(measurement, value, tBodyAcc_mean_X:fBodyBodyGyroJerkMag_std) %>%
+  print
 
